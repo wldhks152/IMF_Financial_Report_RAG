@@ -1,0 +1,23 @@
+# 비밀값 — 절대 올리면 안 됨 (API 키)
+.env
+
+# 가상환경 — requirements.txt로 누구나 다시 만들 수 있음
+.venv/
+venv/
+
+# 벡터 DB — build_index.py로 다시 만들 수 있고 용량이 큼
+chroma_db/
+
+# 파이썬 실행 시 자동 생성되는 캐시
+__pycache__/
+*.pyc
+
+# 원본 PDF — IMF 저작물이라 직접 재배포하지 않고 README에 다운로드 위치를 안내
+data/*.pdf
+
+# 표 변환 캐시 — PDF 내용에서 파생된 데이터라 함께 제외 (build_index.py 실행 시 자동 생성)
+table_cache.json
+
+# Gradio가 만드는 임시 파일
+.gradio/
+flagged/
