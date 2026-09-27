@@ -1,15 +1,19 @@
+# Python 3.14.2 / Windows 11에서 테스트한 버전으로 고정
+# (LangChain은 변화가 빨라서 버전을 고정하지 않으면 나중에 설치했을 때 동작하지 않을 수 있다)
+
 # --- LangChain 핵심 ---
-langchain                  # RAG 파이프라인을 조립하는 프레임워크 본체
-langchain-core             # 프롬프트, 체인(LCEL) 같은 기본 구성요소
-langchain-community        # PDF 로더, FAISS 벡터스토어 등 커뮤니티 통합 모듈
-langchain-openai           # OpenAI 채팅 모델 / 임베딩 모델 연결
-langchain-text-splitters   # 긴 문서를 청크로 자르는 도구
+langchain==1.4.2                  # RAG 파이프라인을 조립하는 프레임워크 본체
+langchain-core==1.6.5             # 프롬프트, 체인(LCEL) 같은 기본 구성요소
+langchain-community==0.4.2        # PyPDFLoader (PDF 로더)
+langchain-openai==1.6.6           # OpenAI 채팅 모델 / 임베딩 모델 연결
+langchain-text-splitters==1.1.2   # 긴 문서를 청크로 자르는 도구
 
 # --- 문서 처리 & 벡터 검색 ---
-pypdf                      # PDF에서 텍스트 추출 (PyPDFLoader가 내부적으로 사용)
-fonttools                  # 일부 PDF의 특수 폰트(CFF) 글자를 제대로 해석하기 위해 pypdf가 사용
-langchain-chroma           # Chroma 벡터 DB 연결 (chromadb도 함께 설치됨)
+pypdf==6.19.0                     # PDF에서 텍스트 추출 (PyPDFLoader가 내부적으로 사용)
+fonttools==4.66.0                 # 일부 PDF의 특수 폰트(CFF) 글자를 제대로 해석하기 위해 pypdf가 사용
+langchain-chroma==1.1.0           # Chroma 벡터 DB 연결
+chromadb==1.5.9                   # Chroma 벡터 DB 본체
 
 # --- 환경 설정 & 웹 UI ---
-python-dotenv              # .env 파일에서 API 키를 읽어 환경변수로 등록
-gradio                     # 웹 채팅 화면을 몇 줄로 띄워주는 UI 라이브러리
+python-dotenv==1.2.3              # .env 파일에서 API 키를 읽어 환경변수로 등록
+gradio==6.28.0                    # 웹 채팅 화면을 몇 줄로 띄워주는 UI 라이브러리

@@ -6,6 +6,7 @@ LangChain + OpenAI + Chroma로 만들고 Gradio로 웹에 띄웁니다.
 ![챗봇 실행 화면: 일본·한국의 2026년 성장률 전망을 보고서 발간 시점별로 비교하고 출처를 표시](docs/demo.png)
 
 - 답변마다 **출처(보고서 · 페이지)** 표시
+- 보고서에 없는 내용은 지어내지 않고 **"제공된 보고서에서 찾을 수 없습니다"**라고 답변
 - 보고서별 수치가 다르면 **발간 시점 순서대로 비교**
 - **대화 기억**: "그럼 일본은?" 같은 후속 질문 가능
 - **한국어 질문 → 영어 검색어로 재작성**해서 영어 보고서 검색 정확도 향상
@@ -33,17 +34,44 @@ data/*.pdf ─ loader.py ─┬─ 일반 페이지 ─ splitter.py (1000자 청
 | `rag_chain.py` | 질문 재작성 + 검색 + 프롬프트 + GPT를 LCEL 체인으로 연결 |
 | `app.py` | Gradio 채팅 화면 (스트리밍, 출처 표시, 보고서 선택) |
 | `compare_search.py` | 한국어 검색 vs 영어 재작성 검색 비교 실험 |
-| `table_cache.json` | 표 변환 결과 캐시 (저장소에는 없음 — 첫 `build_index.py` 실행 시 생성, 이후 GPT 재호출 없이 재사용) |
+| `requirements.txt` | 필요한 라이브러리 (테스트한 버전으로 고정) |
+| `.env.example` | API 키 설정 파일 양식 |
+| `docs/` | README용 이미지 |
+
+실행 중에 생기는 파일(저장소에는 없음):
+
+| 파일 | 설명 |
+|---|---|
+| `.env` | 본인 OpenAI API 키 |
+| `chroma_db/` | 벡터 DB (`build_index.py`가 생성) |
+| `table_cache.json` | 표 변환 결과 캐시 (다음 `build_index.py` 실행 때 GPT 재호출 없이 재사용) |
 
 ## 실행 방법
 
-### 1. 설치 (Python 3.12 이상, Windows 기준)
+Python 3.14.2 / Windows 11에서 테스트했습니다.
+
+### 1. 설치
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
+
+> PowerShell에서 `activate` 실행 시 "스크립트를 실행할 수 없습니다" 오류가 나면, 활성화하지 않고 가상환경의 파이썬을 직접 지정해도 됩니다.
+> 예: `.venv\Scripts\python.exe -m pip install -r requirements.txt`, `.venv\Scripts\python.exe app.py`
+
+<details>
+<summary>macOS / Linux</summary>
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+cp .env.example .env
+```
+(macOS / Linux에서는 테스트하지 않았습니다.)
+</details>
 
 ### 2. API 키 설정
 
@@ -65,7 +93,7 @@ PDF는 저장소에 포함되어 있지 않습니다. [IMF World Economic Outloo
 ```bash
 python build_index.py
 ```
-처음 실행할 때는 표 페이지를 GPT로 변환하느라 4분 정도 걸립니다. 결과는 `table_cache.json`에 저장되어 다음부터는 빠릅니다.
+처음 실행할 때는 표 페이지(43쪽)를 GPT로 변환하느라 4분 정도 걸립니다. 결과는 `table_cache.json`에 저장되어 다음부터는 빠릅니다.
 
 ### 5. 앱 실행
 
@@ -74,17 +102,30 @@ python app.py
 ```
 브라우저에서 http://127.0.0.1:7860 접속
 
-## 사용 모델
+## 사용 모델과 API 사용량
 
 - 임베딩: `text-embedding-3-small`
 - 답변 · 질문 재작성 · 표 변환: `gpt-5-mini`
+
+위 PDF 3개(208쪽) 기준으로 측정한 토큰 사용량입니다.
+
+| 작업 | 토큰 사용량 | 대략적인 비용 |
+|---|---|---|
+| 첫 색인 — 표 변환 (43쪽) | 입력 약 10만 / 출력 약 18만 | 약 0.4달러 |
+| 첫 색인 — 임베딩 (문서 2,376개) | 약 39만 | 0.01달러 미만 |
+| 이후 색인 (표 변환 캐시 사용) | 임베딩만 | 0.01달러 미만 |
+| 질문 1개 | 약 1,500 (본문 위주 답변은 더 많음) | 0.01달러 미만 |
+
+비용은 작성 시점의 가격표로 계산한 추정치입니다. 실제 가격은 [OpenAI 가격표](https://openai.com/api/pricing/)를 확인하세요.
 
 ## 알려진 한계
 
 - 표 변환은 GPT가 하므로, 숫자를 **다른 열에 잘못 붙이는** 실수는 검증 단계에서 잡지 못할 수 있습니다. (원문에 없는 숫자는 걸러냄)
 - 일부 표 행에서 실제값/전망치 구분 표시가 부정확할 수 있습니다.
 - 페이지 머리글이 청크에 섞여 있고, 페이지 경계에서 문장이 끊깁니다.
+- `langchain-community`는 유지보수 종료 예정이라 실행 시 경고가 표시됩니다. (동작에는 문제 없음)
 
-## 출처
+## 라이선스와 출처
 
-보고서 원문 © International Monetary Fund. 이 저장소는 학습 목적의 RAG 예제이며 IMF와 무관합니다.
+- 코드: [MIT License](LICENSE)
+- 보고서 원문 © International Monetary Fund. 이 저장소는 학습 목적의 RAG 예제이며 IMF와 무관합니다.
