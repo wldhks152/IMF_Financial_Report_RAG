@@ -3,6 +3,8 @@
 IMF **World Economic Outlook 2026** 보고서(1월 업데이트 · 4월 정식 보고서 · 7월 업데이트)를 근거로 질문에 답하는 RAG(Retrieval-Augmented Generation) 챗봇입니다.
 LangChain + OpenAI + Chroma로 만들고 Gradio로 웹에 띄웁니다.
 
+![챗봇 실행 화면: 일본·한국의 2026년 성장률 전망을 보고서 발간 시점별로 비교하고 출처를 표시](docs/demo.png)
+
 - 답변마다 **출처(보고서 · 페이지)** 표시
 - 보고서별 수치가 다르면 **발간 시점 순서대로 비교**
 - **대화 기억**: "그럼 일본은?" 같은 후속 질문 가능
